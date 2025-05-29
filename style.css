@@ -1,0 +1,52 @@
+:root {
+  --primary-color: #4b9eff;
+  --primary-light: #6fb3ff;
+  --primary-dark: #3a7ecc;
+  --accent-success: #34c759;
+  --accent-warning: #ff9500;
+  --accent-error: #ff3b30;
+  --neutral-100: #1c1c1e;
+  --neutral-200: #2c2c2e;
+  --neutral-300: #3a3a3c;
+  --neutral-400: #48484a;
+  --neutral-500: #636366;
+  --neutral-600: #8e8e93;
+  --neutral-700: #c7c7cc;
+  --neutral-800: #d1d1d6;
+  --neutral-900: #f2f2f7;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --border-radius: 8px;
+  --transition: 0.2s;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
