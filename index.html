@@ -1,11 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diary</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тижневий Планувальник</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    
+  <div id="app">
+    <div class="sidebar">
+      <button id="add-task-btn" class="add-task">
+        <span class="material-icons">add</span>
+        Додати завдання
+      </button>
+      <div class="days-container">
+        <button class="day-btn" data-day="monday">
+          <span class="material-icons">event</span>
+          Понеділок
+        </button>
+        <button class="day-btn" data-day="tuesday">
+          <span class="material-icons">event</span>
+          Вівторок
+        </button>
+        <button class="day-btn" data-day="wednesday">
+          <span class="material-icons">event</span>
+          Середа
+        </button>
+        <button class="day-btn" data-day="thursday">
+          <span class="material-icons">event</span>
+          Четвер
+        </button>
+        <button class="day-btn" data-day="friday">
+          <span class="material-icons">event</span>
+          П'ятниця
+        </button>
+        <button class="day-btn" data-day="saturday">
+          <span class="material-icons">event</span>
+          Субота
+        </button>
+        <button class="day-btn" data-day="sunday">
+          <span class="material-icons">event</span>
+          Неділя
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="day-header">
+        <h1>
+          <span class="material-icons">today</span>
+          <span id="selected-day">Оберіть день</span>
+        </h1>
+      </div>
+      <div id="tasks-container"></div>
+    </div>
+  </div>
+
+  <div id="task-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>
+          <span class="material-icons">add_task</span>
+          Додати нове завдання
+        </h2>
+        <button class="close-modal">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <form id="task-form">
+        <div class="form-group">
+          <label for="task-title">Назва завдання</label>
+          <input type="text" id="task-title" required placeholder="Введіть назву завдання">
+        </div>
+        <div class="form-group">
+          <label for="task-description">Опис</label>
+          <textarea id="task-description" rows="3" placeholder="Опишіть завдання детальніше"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="task-day">День</label>
+          <select id="task-day" required>
+            <option value="">Оберіть день</option>
+            <option value="monday">Понеділок</option>
+            <option value="tuesday">Вівторок</option>
+            <option value="wednesday">Середа</option>
+            <option value="thursday">Четвер</option>
+            <option value="friday">П'ятниця</option>
+            <option value="saturday">Субота</option>
+            <option value="sunday">Неділя</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="task-priority">Пріоритет</label>
+          <select id="task-priority">
+            <option value="low">Низький</option>
+            <option value="medium" selected>Середній</option>
+            <option value="high">Високий</option>
+          </select>
+        </div>
+        <button type="submit" class="add-task">
+          <span class="material-icons">save</span>
+          Зберегти завдання
+        </button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
