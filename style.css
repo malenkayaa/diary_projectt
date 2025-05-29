@@ -1,28 +1,39 @@
 :root {
-  --primary-color: #4b9eff;
-  --primary-light: #6fb3ff;
-  --primary-dark: #3a7ecc;
-  --accent-success: #34c759;
-  --accent-warning: #ff9500;
-  --accent-error: #ff3b30;
-  --neutral-100: #1c1c1e;
-  --neutral-200: #2c2c2e;
-  --neutral-300: #3a3a3c;
-  --neutral-400: #48484a;
+  --primary-color: #4B9EFF;
+  --primary-light: #6FB3FF;
+  --primary-dark: #3A7ECC;
+  
+  --accent-success: #34C759;
+  --accent-warning: #FF9500;
+  --accent-error: #FF3B30;
+  
+  --neutral-100: #1C1C1E;
+  --neutral-200: #2C2C2E;
+  --neutral-300: #3A3A3C;
+  --neutral-400: #48484A;
   --neutral-500: #636366;
-  --neutral-600: #8e8e93;
-  --neutral-700: #c7c7cc;
-  --neutral-800: #d1d1d6;
-  --neutral-900: #f2f2f7;
+  --neutral-600: #8E8E93;
+  --neutral-700: #C7C7CC;
+  --neutral-800: #D1D1D6;
+  --neutral-900: #F2F2F7;
+  
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 16px;
   --space-4: 24px;
-  --border-radius: 8px;
-  --transition: 0.2s;
+  --space-5: 32px;
+  --space-6: 48px;
+  
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --transition-speed: 0.2s;
 }
 
 * {
@@ -32,21 +43,48 @@
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--neutral-900);
+  background-color: var(--neutral-100);
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#app {
+  display: flex;
+  min-height: 100vh;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--neutral-900);
+  background-color: var(--neutral-200);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  #app {
+    flex-direction: column;
+  }
 }
