@@ -7,20 +7,19 @@
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
-    />
-    <style>      :root {
-        --primary-gradient: linear-gradient(135deg, #6e8efb, #4a6cf7);
-        --primary-color: #4a6cf7;
-        --primary-light: #6e8efb;
-        --primary-dark: #3f5ccf;
-        --accent-success: #00d69c;
-        --accent-warning: #ffa726;
-        --accent-error: #ff5252;
-        --neutral-100: #0a1f44;
-        --neutral-200: #1a2c4e;
-        --neutral-300: #2a3b5a;
-        --neutral-400: #3c4d69;
-        --neutral-500: #556781;
+    />    <style>      :root {
+        --primary-gradient: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        --primary-color: #FF6B6B;
+        --primary-light: #FF8E53;
+        --primary-dark: #E85D5D;
+        --accent-success: #4CAF50;
+        --accent-warning: #FFC107;
+        --accent-error: #f44336;
+        --neutral-100: #1A1B1E;
+        --neutral-200: #2B2C2F;
+        --neutral-300: #3B3C3F;
+        --neutral-400: #4B4C4F;
+        --neutral-500: #5B5C5F;
         --neutral-600: #718096;
         --neutral-700: #a0aec0;
         --neutral-800: #cbd5e0;
@@ -379,6 +378,105 @@
         background: var(--primary-gradient);
         transition: width 0.3s ease;
       }
+
+      .image-preview {
+        margin-top: var(--space-2);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .image-preview img {
+        max-width: 100%;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .custom-file-upload {
+        display: inline-block;
+        padding: var(--space-2) var(--space-3);
+        cursor: pointer;
+        border-radius: var(--border-radius);
+        background: var(--neutral-300);
+        color: var(--neutral-900);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      .custom-file-upload:hover {
+        background: var(--neutral-400);
+      }
+
+      .custom-file-upload:after {
+        content: 'Завантажити зображення';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        color: var(--neutral-700);
+        pointer-events: none;
+      }
+
+      .custom-file-upload .material-icons {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: var(--neutral-900);
+      }
+
+      .search-container {
+        margin-bottom: var(--space-3);
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: var(--space-2) var(--space-3);
+        background: var(--neutral-300);
+        border: 1px solid var(--neutral-400);
+        border-radius: var(--border-radius);
+        color: var(--neutral-900);
+        transition: var(--transition);
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px var(--primary-color);
+      }
+
+      .tags-filter {
+        display: flex;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+        flex-wrap: wrap;
+      }
+
+      .tag-filter-btn {
+        padding: var(--space-1) var(--space-2);
+        background: var(--neutral-300);
+        border: none;
+        border-radius: 12px;
+        color: var(--neutral-900);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 12px;
+      }
+
+      .tag-filter-btn:hover,
+      .tag-filter-btn.active {
+        background: var(--primary-gradient);
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -388,6 +486,15 @@
           <span class="material-icons">add</span>
           Додати завдання
         </button>
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Пошук завдань..."
+            id="search-input"
+          />
+        </div>
+        <div class="tags-filter" id="tags-filter"></div>
         <div class="days-container">
           <button class="day-btn" data-day="monday">
             <span class="material-icons">event</span>
@@ -488,6 +595,16 @@
               id="task-tags"
               placeholder="Наприклад: важливе, робота, навчання"
             />
+          </div>
+          <div class="form-group">
+            <label for="task-image">Зображення</label>
+            <input
+              type="file"
+              id="task-image"
+              accept="image/*"
+              class="file-input"
+            />
+            <div id="image-preview" class="image-preview"></div>
           </div>
           <button type="submit" class="add-task">
             <span class="material-icons">save</span>
@@ -643,6 +760,11 @@
             </div>
           </div>
           ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+          ${task.image ? `
+            <div class="task-image">
+              <img src="${task.image}" alt="Task image">
+            </div>
+          ` : ''}
           ${task.tags && task.tags.length > 0 ? `
             <div class="task-tags">
               ${task.tags.map(tag => `<span class="task-tag">${tag}</span>`).join('')}
@@ -688,7 +810,150 @@
         }
       }
 
-      // Ініціалізація
+      let uniqueTags = new Set();
+
+      function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('image-preview').innerHTML = `
+              <img src="${e.target.result}" alt="Preview" style="max-height: 200px;">
+            `;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function updateTagsFilter() {
+        const tagsFilter = document.getElementById('tags-filter');
+        const tags = Array.from(uniqueTags);
+        
+        tagsFilter.innerHTML = tags.map(tag => `
+          <button class="tag-filter-btn" data-tag="${tag}">${tag}</button>
+        `).join('');
+
+        tagsFilter.querySelectorAll('.tag-filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            filterTasks();
+          });
+        });
+      }
+
+      function filterTasks() {
+        const searchText = document.getElementById('search-input').value.toLowerCase();
+        const activeTags = Array.from(document.querySelectorAll('.tag-filter-btn.active'))
+          .map(btn => btn.dataset.tag);
+        const activeDay = document.querySelector('.day-btn.active').dataset.day;
+        const tasks = loadFromStorage();
+
+        const filteredTasks = tasks.filter(task => {
+          const matchesSearch = task.title.toLowerCase().includes(searchText) ||
+                              task.description.toLowerCase().includes(searchText);
+          const matchesTags = activeTags.length === 0 ||
+                            activeTags.some(tag => task.tags.includes(tag));
+          const matchesDay = task.day === activeDay;
+
+          return matchesSearch && matchesTags && matchesDay;
+        });
+
+        displayFilteredTasks(filteredTasks);
+      }
+
+      function displayFilteredTasks(tasks) {
+        const tasksContainer = document.getElementById('tasks-container');
+        
+        if (tasks.length === 0) {
+          tasksContainer.innerHTML = `
+            <div class="no-tasks">
+              <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">search_off</span>
+              <p>Завдань не знайдено</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Використовуємо існуючу функцію для відображення
+        tasksContainer.innerHTML = tasks
+          .map(
+            (task, index) => `
+        <div class="task-card priority-${task.priority} ${task.completed ? 'completed' : ''}" 
+             data-id="${task.id}" 
+             style="animation-delay: ${index * 0.1}s">
+          <div class="priority-badge">
+            <span class="material-icons">${priorityIcons[task.priority]}</span>
+            ${priorityTranslations[task.priority]}
+          </div>
+          <div class="task-header">
+            <h3 class="task-title">${task.title}</h3>
+            <div class="task-actions">
+              <button class="task-btn complete-btn" title="${
+                task.completed ? 'Відмінити виконання' : 'Позначити як виконане'
+              }">
+                <span class="material-icons">${
+                  task.completed ? 'undo' : 'check_circle'
+                }</span>
+              </button>
+              <button class="task-btn delete-btn" title="Видалити завдання">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+          ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+          ${task.image ? `
+            <div class="task-image">
+              <img src="${task.image}" alt="Task image">
+            </div>
+          ` : ''}
+          ${task.tags && task.tags.length > 0 ? `
+            <div class="task-tags">
+              ${task.tags.map(tag => `<span class="task-tag">${tag}</span>`).join('')}
+            </div>
+          ` : ''}
+          <div class="task-date">
+            <span class="material-icons" style="font-size: 16px;">calendar_today</span>
+            ${new Date(task.createdAt).toLocaleDateString('uk-UA', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'numeric',
+              day: 'numeric',
+            })}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${task.completed ? '100%' : '0'}"></div>
+          </div>
+        </div>
+      `
+          )
+          .join('');
+
+        // Додаємо обробники подій
+        tasksContainer.querySelectorAll('.task-card').forEach((card) => {
+          const taskId = card.dataset.id;
+
+          card.querySelector('.complete-btn').addEventListener('click', () => {
+            toggleTaskComplete(taskId);
+          });
+
+          card.querySelector('.delete-btn').addEventListener('click', () => {
+            deleteTask(taskId);
+          });
+        });
+      }
+
+      // Додаємо функцію для оновлення унікальних тегів
+      function updateUniqueTags() {
+        uniqueTags = new Set();
+        const tasks = loadFromStorage();
+        tasks.forEach(task => {
+          if (task.tags) {
+            task.tags.forEach(tag => uniqueTags.add(tag));
+          }
+        });
+        updateTagsFilter();
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const dayButtons = document.querySelectorAll('.day-btn');
         const addTaskBtn = document.getElementById('add-task-btn');
@@ -734,6 +999,44 @@
           addTask(title, description, day, priority, tags);
 
           taskForm.reset();
+          modal.classList.remove('show');
+
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay && activeDay.dataset.day === day) {
+            displayTasksForDay(day);
+          }
+        });
+
+        // Додаємо обробник для пошуку
+        document.getElementById('search-input').addEventListener('input', filterTasks);
+
+        // Додаємо обробник для завантаження зображень
+        document.getElementById('task-image').addEventListener('change', handleImageUpload);
+
+        // Оновлюємо теги при завантаженні
+        updateUniqueTags();
+
+        // Оновлюємо форму для збереження зображення
+        taskForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const title = document.getElementById('task-title').value;
+          const description = document.getElementById('task-description').value;
+          const day = document.getElementById('task-day').value;
+          const priority = document.getElementById('task-priority').value;
+          const tags = document.getElementById('task-tags').value;
+          const imagePreview = document.getElementById('image-preview').querySelector('img');
+          const image = imagePreview ? imagePreview.src : null;
+
+          const task = addTask(title, description, day, priority, tags);
+          if (image) {
+            task.image = image;
+            saveToStorage(loadFromStorage());
+          }
+
+          updateUniqueTags();
+          taskForm.reset();
+          document.getElementById('image-preview').innerHTML = '';
           modal.classList.remove('show');
 
           const activeDay = document.querySelector('.day-btn.active');
