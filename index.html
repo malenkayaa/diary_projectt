@@ -8,23 +8,23 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --primary-color: #4b9eff;
-        --primary-light: #6fb3ff;
-        --primary-dark: #3a7ecc;
-        --accent-success: #34c759;
-        --accent-warning: #ff9500;
-        --accent-error: #ff3b30;
-        --neutral-100: #1c1c1e;
-        --neutral-200: #2c2c2e;
-        --neutral-300: #3a3a3c;
-        --neutral-400: #48484a;
-        --neutral-500: #636366;
-        --neutral-600: #8e8e93;
-        --neutral-700: #c7c7cc;
-        --neutral-800: #d1d1d6;
-        --neutral-900: #f2f2f7;
+    <style>      :root {
+        --primary-gradient: linear-gradient(135deg, #6e8efb, #4a6cf7);
+        --primary-color: #4a6cf7;
+        --primary-light: #6e8efb;
+        --primary-dark: #3f5ccf;
+        --accent-success: #00d69c;
+        --accent-warning: #ffa726;
+        --accent-error: #ff5252;
+        --neutral-100: #0a1f44;
+        --neutral-200: #1a2c4e;
+        --neutral-300: #2a3b5a;
+        --neutral-400: #3c4d69;
+        --neutral-500: #556781;
+        --neutral-600: #718096;
+        --neutral-700: #a0aec0;
+        --neutral-800: #cbd5e0;
+        --neutral-900: #f7fafc;
         --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
         --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
         --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
@@ -56,16 +56,14 @@
 
       .sidebar {
         width: 240px;
-        background: var(--neutral-200);
+        background: linear-gradient(180deg, var(--neutral-200) 0%, var(--neutral-100) 100%);
         padding: var(--space-3);
         border-right: 1px solid var(--neutral-300);
-        box-shadow: var(--shadow-sm);
-      }
-
-      .add-task {
+        box-shadow: var(--shadow-md);
+      }      .add-task {
         width: 100%;
         padding: var(--space-2);
-        background: var(--primary-color);
+        background: var(--primary-gradient);
         color: white;
         border: none;
         border-radius: var(--border-radius);
@@ -77,6 +75,7 @@
         justify-content: center;
         gap: var(--space-2);
         font-weight: 600;
+        box-shadow: 0 4px 15px rgba(74, 108, 247, 0.3);
       }
 
       .add-task:hover {
@@ -88,49 +87,37 @@
       .day-btn {
         width: 100%;
         padding: var(--space-2) var(--space-3);
-        background: none;
+        background: rgba(255, 255, 255, 0.05);
         border: none;
         color: var(--neutral-900);
         border-radius: var(--border-radius);
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         gap: var(--space-2);
         margin-bottom: var(--space-1);
         position: relative;
         overflow: hidden;
-      }
-
-      .day-btn::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background: var(--primary-color);
-        transform: scaleY(0);
-        transition: transform 0.2s;
+        backdrop-filter: blur(5px);
       }
 
       .day-btn:hover {
-        background: var(--neutral-300);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
       }
 
       .day-btn.active {
-        background: var(--primary-color);
+        background: var(--primary-gradient);
         color: white;
-      }
-
-      .day-btn.active::before {
-        transform: scaleY(1);
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(74, 108, 247, 0.2);
       }
 
       .content {
         flex: 1;
         padding: var(--space-4);
-        background: var(--neutral-200);
+        background: linear-gradient(135deg, var(--neutral-200) 0%, var(--neutral-100) 100%);
         overflow-y: auto;
       }
 
@@ -244,57 +231,45 @@
       }
 
       .task-card {
-        background: var(--neutral-300);
+        background: rgba(255, 255, 255, 0.05);
         padding: var(--space-3);
         border-radius: var(--border-radius);
         margin-bottom: var(--space-3);
         border-left: 4px solid var(--primary-color);
-        transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       .task-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
       }
 
-      .task-card.priority-high {
-        border-left-color: var(--accent-error);
+      .task-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
 
-      .task-card.priority-medium {
-        border-left-color: var(--accent-warning);
-      }
-
-      .task-card.completed {
-        opacity: 0.6;
-      }
-
-      .task-card.completed .task-title {
-        text-decoration: line-through;
-      }
-
-      .task-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-2);
-      }
-
-      .task-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--neutral-900);
-      }
-
-      .task-actions {
-        display: flex;
-        gap: var(--space-1);
+      .task-card:hover::before {
+        opacity: 1;
       }
 
       .task-btn {
-        background: none;
+        background: rgba(255, 255, 255, 0.1);
         border: none;
         color: var(--neutral-700);
         cursor: pointer;
@@ -305,82 +280,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: var(--transition);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
       }
 
       .task-btn:hover {
+        transform: scale(1.1);
         background: var(--neutral-400);
         color: var(--neutral-900);
-      }
-
-      .task-btn.complete-btn {
-        color: var(--accent-success);
-      }
-
-      .task-btn.delete-btn {
-        color: var(--accent-error);
-      }
-
-      .task-description {
-        color: var(--neutral-700);
-        margin-bottom: var(--space-2);
-        line-height: 1.5;
-      }
-
-      .task-priority {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        padding: var(--space-1) var(--space-2);
-        border-radius: var(--border-radius);
-        font-size: 14px;
-        font-weight: 500;
-      }
-
-      .priority-high {
-        background: rgba(255, 59, 48, 0.1);
-        color: var(--accent-error);
-      }
-
-      .priority-medium {
-        background: rgba(255, 149, 0, 0.1);
-        color: var(--accent-warning);
-      }
-
-      .priority-low {
-        background: rgba(77, 163, 255, 0.1);
-        color: var(--primary-color);
-      }
-
-      .no-tasks {
-        text-align: center;
-        padding: var(--space-4);
-        color: var(--neutral-600);
-      }
-
-      @media (max-width: 768px) {
-        #app {
-          flex-direction: column;
-        }
-
-        .sidebar {
-          width: 100%;
-          padding: var(--space-2);
-        }
-
-        .content {
-          padding: var(--space-2);
-        }
-
-        .modal-content {
-          margin: 0 var(--space-2);
-        }
       }
 
       @keyframes slideIn {
         from {
           opacity: 0;
-          transform: translateY(20px);
+          transform: translateY(30px);
         }
         to {
           opacity: 1;
@@ -389,7 +302,8 @@
       }
 
       .task-card {
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.5s ease-out forwards;
+        animation-delay: calc(var(--animation-order, 0) * 0.1s);
       }
     </style>
   </head>
