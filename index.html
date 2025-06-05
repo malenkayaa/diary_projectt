@@ -1,112 +1,742 @@
 <!DOCTYPE html>
 <html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тижневий Планувальник</title>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #4b9eff;
+        --primary-light: #6fb3ff;
+        --primary-dark: #3a7ecc;
+        --accent-success: #34c759;
+        --accent-warning: #ff9500;
+        --accent-error: #ff3b30;
+        --neutral-100: #1c1c1e;
+        --neutral-200: #2c2c2e;
+        --neutral-300: #3a3a3c;
+        --neutral-400: #48484a;
+        --neutral-500: #636366;
+        --neutral-600: #8e8e93;
+        --neutral-700: #c7c7cc;
+        --neutral-800: #d1d1d6;
+        --neutral-900: #f2f2f7;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 16px;
+        --space-4: 24px;
+        --border-radius: 8px;
+        --transition: 0.2s;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тижневий Планувальник</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-<body>
-  <div id="app">
-    <div class="sidebar">
-      <button id="add-task-btn" class="add-task">
-        <span class="material-icons">add</span>
-        Додати завдання
-      </button>
-      <div class="days-container">
-        <button class="day-btn" data-day="monday">
-          <span class="material-icons">event</span>
-          Понеділок
+      body {
+        font-family: -apple-system, system-ui, sans-serif;
+        background: var(--neutral-100);
+        color: var(--neutral-900);
+        min-height: 100vh;
+      }
+
+      #app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 240px;
+        background: var(--neutral-200);
+        padding: var(--space-3);
+        border-right: 1px solid var(--neutral-300);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .add-task {
+        width: 100%;
+        padding: var(--space-2);
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        margin-bottom: var(--space-3);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        font-weight: 600;
+      }
+
+      .add-task:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .day-btn {
+        width: 100%;
+        padding: var(--space-2) var(--space-3);
+        background: none;
+        border: none;
+        color: var(--neutral-900);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .day-btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: var(--primary-color);
+        transform: scaleY(0);
+        transition: transform 0.2s;
+      }
+
+      .day-btn:hover {
+        background: var(--neutral-300);
+      }
+
+      .day-btn.active {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .day-btn.active::before {
+        transform: scaleY(1);
+      }
+
+      .content {
+        flex: 1;
+        padding: var(--space-4);
+        background: var(--neutral-200);
+        overflow-y: auto;
+      }
+
+      .day-header {
+        margin-bottom: var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--neutral-300);
+      }
+
+      .day-header h1 {
+        font-size: 28px;
+        color: var(--neutral-900);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .modal.show {
+        display: flex;
+        opacity: 1;
+      }
+
+      .modal-content {
+        background: var(--neutral-200);
+        padding: var(--space-4);
+        border-radius: var(--border-radius);
+        width: 100%;
+        max-width: 500px;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: transform 0.3s, opacity 0.3s;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .modal.show .modal-content {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-3);
+      }
+
+      .modal-header h2 {
+        font-size: 24px;
+        color: var(--neutral-900);
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        color: var(--neutral-700);
+        cursor: pointer;
+        padding: var(--space-1);
+        border-radius: 50%;
+        transition: var(--transition);
+      }
+
+      .close-modal:hover {
+        background: var(--neutral-300);
+        color: var(--neutral-900);
+      }
+
+      .form-group {
+        margin-bottom: var(--space-3);
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: var(--space-2);
+        color: var(--neutral-700);
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: var(--space-2);
+        background: var(--neutral-300);
+        border: 1px solid var(--neutral-400);
+        border-radius: var(--border-radius);
+        color: var(--neutral-900);
+        transition: var(--transition);
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px var(--primary-color);
+      }
+
+      .task-card {
+        background: var(--neutral-300);
+        padding: var(--space-3);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--space-3);
+        border-left: 4px solid var(--primary-color);
+        transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .task-card.priority-high {
+        border-left-color: var(--accent-error);
+      }
+
+      .task-card.priority-medium {
+        border-left-color: var(--accent-warning);
+      }
+
+      .task-card.completed {
+        opacity: 0.6;
+      }
+
+      .task-card.completed .task-title {
+        text-decoration: line-through;
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-2);
+      }
+
+      .task-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--neutral-900);
+      }
+
+      .task-actions {
+        display: flex;
+        gap: var(--space-1);
+      }
+
+      .task-btn {
+        background: none;
+        border: none;
+        color: var(--neutral-700);
+        cursor: pointer;
+        padding: var(--space-1);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+      }
+
+      .task-btn:hover {
+        background: var(--neutral-400);
+        color: var(--neutral-900);
+      }
+
+      .task-btn.complete-btn {
+        color: var(--accent-success);
+      }
+
+      .task-btn.delete-btn {
+        color: var(--accent-error);
+      }
+
+      .task-description {
+        color: var(--neutral-700);
+        margin-bottom: var(--space-2);
+        line-height: 1.5;
+      }
+
+      .task-priority {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--border-radius);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .priority-high {
+        background: rgba(255, 59, 48, 0.1);
+        color: var(--accent-error);
+      }
+
+      .priority-medium {
+        background: rgba(255, 149, 0, 0.1);
+        color: var(--accent-warning);
+      }
+
+      .priority-low {
+        background: rgba(77, 163, 255, 0.1);
+        color: var(--primary-color);
+      }
+
+      .no-tasks {
+        text-align: center;
+        padding: var(--space-4);
+        color: var(--neutral-600);
+      }
+
+      @media (max-width: 768px) {
+        #app {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          padding: var(--space-2);
+        }
+
+        .content {
+          padding: var(--space-2);
+        }
+
+        .modal-content {
+          margin: 0 var(--space-2);
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .task-card {
+        animation: slideIn 0.3s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="sidebar">
+        <button id="add-task-btn" class="add-task">
+          <span class="material-icons">add</span>
+          Додати завдання
         </button>
-        <button class="day-btn" data-day="tuesday">
-          <span class="material-icons">event</span>
-          Вівторок
-        </button>
-        <button class="day-btn" data-day="wednesday">
-          <span class="material-icons">event</span>
-          Середа
-        </button>
-        <button class="day-btn" data-day="thursday">
-          <span class="material-icons">event</span>
-          Четвер
-        </button>
-        <button class="day-btn" data-day="friday">
-          <span class="material-icons">event</span>
-          П'ятниця
-        </button>
-        <button class="day-btn" data-day="saturday">
-          <span class="material-icons">event</span>
-          Субота
-        </button>
-        <button class="day-btn" data-day="sunday">
-          <span class="material-icons">event</span>
-          Неділя
-        </button>
+        <div class="days-container">
+          <button class="day-btn" data-day="monday">
+            <span class="material-icons">event</span>
+            Понеділок
+          </button>
+          <button class="day-btn" data-day="tuesday">
+            <span class="material-icons">event</span>
+            Вівторок
+          </button>
+          <button class="day-btn" data-day="wednesday">
+            <span class="material-icons">event</span>
+            Середа
+          </button>
+          <button class="day-btn" data-day="thursday">
+            <span class="material-icons">event</span>
+            Четвер
+          </button>
+          <button class="day-btn" data-day="friday">
+            <span class="material-icons">event</span>
+            П'ятниця
+          </button>
+          <button class="day-btn" data-day="saturday">
+            <span class="material-icons">event</span>
+            Субота
+          </button>
+          <button class="day-btn" data-day="sunday">
+            <span class="material-icons">event</span>
+            Неділя
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="day-header">
+          <h1>
+            <span class="material-icons">today</span>
+            <span id="selected-day">Оберіть день</span>
+          </h1>
+        </div>
+        <div id="tasks-container"></div>
       </div>
     </div>
 
-    <div class="content">
-      <div class="day-header">
-        <h1>
-          <span class="material-icons">today</span>
-          <span id="selected-day">Оберіть день</span>
-        </h1>
+    <div id="task-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>
+            <span class="material-icons">add_task</span>
+            Додати нове завдання
+          </h2>
+          <button class="close-modal">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <form id="task-form">
+          <div class="form-group">
+            <label for="task-title">Назва завдання</label>
+            <input
+              type="text"
+              id="task-title"
+              required
+              placeholder="Введіть назву завдання"
+            />
+          </div>
+          <div class="form-group">
+            <label for="task-description">Опис</label>
+            <textarea
+              id="task-description"
+              rows="3"
+              placeholder="Опишіть завдання детальніше"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="task-day">День</label>
+            <select id="task-day" required>
+              <option value="">Оберіть день</option>
+              <option value="monday">Понеділок</option>
+              <option value="tuesday">Вівторок</option>
+              <option value="wednesday">Середа</option>
+              <option value="thursday">Четвер</option>
+              <option value="friday">П'ятниця</option>
+              <option value="saturday">Субота</option>
+              <option value="sunday">Неділя</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-priority">Пріоритет</label>
+            <select id="task-priority">
+              <option value="low">Низький</option>
+              <option value="medium" selected>Середній</option>
+              <option value="high">Високий</option>
+            </select>
+          </div>
+          <button type="submit" class="add-task">
+            <span class="material-icons">save</span>
+            Зберегти завдання
+          </button>
+        </form>
       </div>
-      <div id="tasks-container"></div>
     </div>
-  </div>
 
-  <div id="task-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>
-          <span class="material-icons">add_task</span>
-          Додати нове завдання
-        </h2>
-        <button class="close-modal">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
-      <form id="task-form">
-        <div class="form-group">
-          <label for="task-title">Назва завдання</label>
-          <input type="text" id="task-title" required placeholder="Введіть назву завдання">
+    <script>
+      // Переклади
+      const dayTranslations = {
+        monday: 'Понеділок',
+        tuesday: 'Вівторок',
+        wednesday: 'Середа',
+        thursday: 'Четвер',
+        friday: "П'ятниця",
+        saturday: 'Субота',
+        sunday: 'Неділя',
+      };
+
+      const priorityTranslations = {
+        low: 'Низький',
+        medium: 'Середній',
+        high: 'Високий',
+      };
+
+      const priorityIcons = {
+        low: 'low_priority',
+        medium: 'priority',
+        high: 'priority_high',
+      };
+
+      // Робота з локальним сховищем
+      function saveToStorage(tasks) {
+        localStorage.setItem('weekly-planner-tasks', JSON.stringify(tasks));
+      }
+
+      function loadFromStorage() {
+        const tasks = localStorage.getItem('weekly-planner-tasks');
+        return tasks ? JSON.parse(tasks) : [];
+      }
+
+      // Управління завданнями
+      function addTask(title, description, day, priority) {
+        const tasks = loadFromStorage();
+
+        const newTask = {
+          id: Date.now().toString(),
+          title,
+          description,
+          day,
+          priority,
+          completed: false,
+          createdAt: new Date().toISOString(),
+        };
+
+        tasks.push(newTask);
+        saveToStorage(tasks);
+
+        return newTask;
+      }
+
+      function deleteTask(taskId) {
+        const tasks = loadFromStorage();
+        const updatedTasks = tasks.filter((task) => task.id !== taskId);
+        saveToStorage(updatedTasks);
+
+        const taskCard = document.querySelector(
+          `.task-card[data-id="${taskId}"]`
+        );
+        if (taskCard) {
+          taskCard.style.transform = 'translateX(100px)';
+          taskCard.style.opacity = '0';
+          setTimeout(() => {
+            taskCard.remove();
+            checkEmptyTasks();
+          }, 300);
+        }
+      }
+
+      function toggleTaskComplete(taskId) {
+        const tasks = loadFromStorage();
+
+        const updatedTasks = tasks.map((task) => {
+          if (task.id === taskId) {
+            return { ...task, completed: !task.completed };
+          }
+          return task;
+        });
+
+        saveToStorage(updatedTasks);
+
+        const taskCard = document.querySelector(
+          `.task-card[data-id="${taskId}"]`
+        );
+        if (taskCard) {
+          taskCard.classList.toggle('completed');
+          const completeBtn = taskCard.querySelector('.complete-btn');
+          completeBtn.innerHTML = `<span class="material-icons">${
+            taskCard.classList.contains('completed') ? 'undo' : 'check_circle'
+          }</span>`;
+        }
+      }
+
+      function displayTasksForDay(day) {
+        const tasksContainer = document.getElementById('tasks-container');
+        const tasks = loadFromStorage().filter((task) => task.day === day);
+
+        document.getElementById('selected-day').textContent =
+          dayTranslations[day];
+
+        if (tasks.length === 0) {
+          tasksContainer.innerHTML = `
+          <div class="no-tasks">
+            <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">task</span>
+            <p>Немає завдань на ${dayTranslations[day].toLowerCase()}</p>
+            <p>Натисніть "Додати завдання" щоб створити нове</p>
+          </div>
+        `;
+          return;
+        }
+
+        tasks.sort((a, b) => {
+          if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          const priorityOrder = { high: 0, medium: 1, low: 2 };
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        });
+
+        tasksContainer.innerHTML = tasks
+          .map(
+            (task, index) => `
+        <div class="task-card priority-${task.priority} ${
+              task.completed ? 'completed' : ''
+            }" 
+             data-id="${task.id}" 
+             style="animation-delay: ${index * 0.1}s">
+          <div class="task-header">
+            <h3 class="task-title">${task.title}</h3>
+            <div class="task-actions">
+              <button class="task-btn complete-btn" title="${
+                task.completed ? 'Відмінити виконання' : 'Позначити як виконане'
+              }">
+                <span class="material-icons">${
+                  task.completed ? 'undo' : 'check_circle'
+                }</span>
+              </button>
+              <button class="task-btn delete-btn" title="Видалити завдання">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+          ${
+            task.description
+              ? `<p class="task-description">${task.description}</p>`
+              : ''
+          }
+          <span class="task-priority priority-${task.priority}">
+            <span class="material-icons">${priorityIcons[task.priority]}</span>
+            ${priorityTranslations[task.priority]} пріоритет
+          </span>
         </div>
-        <div class="form-group">
-          <label for="task-description">Опис</label>
-          <textarea id="task-description" rows="3" placeholder="Опишіть завдання детальніше"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="task-day">День</label>
-          <select id="task-day" required>
-            <option value="">Оберіть день</option>
-            <option value="monday">Понеділок</option>
-            <option value="tuesday">Вівторок</option>
-            <option value="wednesday">Середа</option>
-            <option value="thursday">Четвер</option>
-            <option value="friday">П'ятниця</option>
-            <option value="saturday">Субота</option>
-            <option value="sunday">Неділя</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="task-priority">Пріоритет</label>
-          <select id="task-priority">
-            <option value="low">Низький</option>
-            <option value="medium" selected>Середній</option>
-            <option value="high">Високий</option>
-          </select>
-        </div>
-        <button type="submit" class="add-task">
-          <span class="material-icons">save</span>
-          Зберегти завдання
-        </button>
-      </form>
-    </div>
-  </div>
-  <script src="app.js"></script>
-</body>
+      `
+          )
+          .join('');
+
+        // Додаємо обробники подій для кнопок
+        tasksContainer.querySelectorAll('.task-card').forEach((card) => {
+          const taskId = card.dataset.id;
+
+          card.querySelector('.complete-btn').addEventListener('click', () => {
+            toggleTaskComplete(taskId);
+          });
+
+          card.querySelector('.delete-btn').addEventListener('click', () => {
+            deleteTask(taskId);
+          });
+        });
+      }
+
+      function checkEmptyTasks() {
+        const tasksContainer = document.getElementById('tasks-container');
+        const activeDay = document.querySelector('.day-btn.active');
+
+        if (tasksContainer.children.length === 0 && activeDay) {
+          displayTasksForDay(activeDay.dataset.day);
+        }
+      }
+
+      // Ініціалізація
+      document.addEventListener('DOMContentLoaded', () => {
+        const dayButtons = document.querySelectorAll('.day-btn');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const modal = document.getElementById('task-modal');
+        const closeModalBtn = document.querySelector('.close-modal');
+        const taskForm = document.getElementById('task-form');
+
+        dayButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            dayButtons.forEach((btn) => btn.classList.remove('active'));
+            button.classList.add('active');
+            displayTasksForDay(button.dataset.day);
+          });
+        });
+
+        addTaskBtn.addEventListener('click', () => {
+          modal.classList.add('show');
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay) {
+            document.getElementById('task-day').value = activeDay.dataset.day;
+          }
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+          modal.classList.remove('show');
+        });
+
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.classList.remove('show');
+          }
+        });
+
+        taskForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const title = document.getElementById('task-title').value;
+          const description = document.getElementById('task-description').value;
+          const day = document.getElementById('task-day').value;
+          const priority = document.getElementById('task-priority').value;
+
+          addTask(title, description, day, priority);
+
+          taskForm.reset();
+          modal.classList.remove('show');
+
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay && activeDay.dataset.day === day) {
+            displayTasksForDay(day);
+          }
+        });
+
+        // Початкова ініціалізація з понеділком
+        document.querySelector('[data-day="monday"]').click();
+      });
+    </script>
+  </body>
 </html>
