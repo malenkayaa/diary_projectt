@@ -305,6 +305,80 @@
         animation: slideIn 0.5s ease-out forwards;
         animation-delay: calc(var(--animation-order, 0) * 0.1s);
       }
+
+      .task-tags {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .task-tag {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--neutral-900);
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+      }
+
+      .task-tag:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .task-date {
+        font-size: 12px;
+        color: var(--neutral-700);
+        margin-top: var(--space-2);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .priority-badge {
+        position: absolute;
+        top: var(--space-2);
+        right: var(--space-2);
+        padding: 4px 8px;
+        border-radius: var(--border-radius);
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .priority-high .priority-badge {
+        background: rgba(255, 82, 82, 0.2);
+        color: var(--accent-error);
+      }
+
+      .priority-medium .priority-badge {
+        background: rgba(255, 167, 38, 0.2);
+        color: var(--accent-warning);
+      }
+
+      .priority-low .priority-badge {
+        background: rgba(74, 108, 247, 0.2);
+        color: var(--primary-color);
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: var(--neutral-300);
+        border-radius: 2px;
+        margin-top: var(--space-3);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+      }
     </style>
   </head>
   <body>
@@ -407,6 +481,14 @@
               <option value="high">Високий</option>
             </select>
           </div>
+          <div class="form-group">
+            <label for="task-tags">Теги (розділіть комами)</label>
+            <input
+              type="text"
+              id="task-tags"
+              placeholder="Наприклад: важливе, робота, навчання"
+            />
+          </div>
           <button type="submit" class="add-task">
             <span class="material-icons">save</span>
             Зберегти завдання
@@ -450,7 +532,7 @@
       }
 
       // Управління завданнями
-      function addTask(title, description, day, priority) {
+      function addTask(title, description, day, priority, tags) {
         const tasks = loadFromStorage();
 
         const newTask = {
@@ -459,6 +541,7 @@
           description,
           day,
           priority,
+          tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
           completed: false,
           createdAt: new Date().toISOString(),
         };
@@ -515,8 +598,7 @@
         const tasksContainer = document.getElementById('tasks-container');
         const tasks = loadFromStorage().filter((task) => task.day === day);
 
-        document.getElementById('selected-day').textContent =
-          dayTranslations[day];
+        document.getElementById('selected-day').textContent = dayTranslations[day];
 
         if (tasks.length === 0) {
           tasksContainer.innerHTML = `
@@ -538,11 +620,13 @@
         tasksContainer.innerHTML = tasks
           .map(
             (task, index) => `
-        <div class="task-card priority-${task.priority} ${
-              task.completed ? 'completed' : ''
-            }" 
+        <div class="task-card priority-${task.priority} ${task.completed ? 'completed' : ''}" 
              data-id="${task.id}" 
              style="animation-delay: ${index * 0.1}s">
+          <div class="priority-badge">
+            <span class="material-icons">${priorityIcons[task.priority]}</span>
+            ${priorityTranslations[task.priority]}
+          </div>
           <div class="task-header">
             <h3 class="task-title">${task.title}</h3>
             <div class="task-actions">
@@ -558,15 +642,24 @@
               </button>
             </div>
           </div>
-          ${
-            task.description
-              ? `<p class="task-description">${task.description}</p>`
-              : ''
-          }
-          <span class="task-priority priority-${task.priority}">
-            <span class="material-icons">${priorityIcons[task.priority]}</span>
-            ${priorityTranslations[task.priority]} пріоритет
-          </span>
+          ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+          ${task.tags && task.tags.length > 0 ? `
+            <div class="task-tags">
+              ${task.tags.map(tag => `<span class="task-tag">${tag}</span>`).join('')}
+            </div>
+          ` : ''}
+          <div class="task-date">
+            <span class="material-icons" style="font-size: 16px;">calendar_today</span>
+            ${new Date(task.createdAt).toLocaleDateString('uk-UA', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'numeric',
+              day: 'numeric',
+            })}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${task.completed ? '100%' : '0'}"></div>
+          </div>
         </div>
       `
           )
@@ -636,8 +729,9 @@
           const description = document.getElementById('task-description').value;
           const day = document.getElementById('task-day').value;
           const priority = document.getElementById('task-priority').value;
+          const tags = document.getElementById('task-tags').value;
 
-          addTask(title, description, day, priority);
+          addTask(title, description, day, priority, tags);
 
           taskForm.reset();
           modal.classList.remove('show');
