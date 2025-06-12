@@ -177,6 +177,69 @@ function renderTrashItems() {
   });
 }
 
+// --- Відображення завдань для обраного дня ---
+function displayTasksForDay(day, tagFilter = '') {
+  const tasksContainer = document.getElementById('tasks-container');
+  const selectedDay = document.getElementById('selected-day');
+  if (selectedDay) {
+    selectedDay.textContent = dayTranslations[day] || 'Оберіть день';
+  }
+  const allTasks = loadFromStorage();
+  let tasks = allTasks.filter(task => task.day === day);
+  if (tagFilter) {
+    const filter = tagFilter.trim().toLowerCase();
+    tasks = tasks.filter(task => task.tags && task.tags.some(tag => tag.includes(filter)));
+  }
+  if (tasks.length === 0) {
+    tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
+      <span class="material-icons" style="font-size:48px; margin-bottom:16px;">event_busy</span>
+      <p>Завдань немає</p>
+    </div>`;
+    return;
+  }
+  tasksContainer.innerHTML = tasks
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    .map((task, idx) => `
+      <div class="task-card" data-id="${task.id}" style="--animation-order:${idx}">
+        <div class="task-header">
+          <div>
+            <strong>${task.title}</strong>
+            <div class="task-priority priority-${task.priority}">
+              <span class="material-icons">${priorityIcons[task.priority]}</span>
+              ${priorityTranslations[task.priority]}
+            </div>
+            ${task.tags && task.tags.length ? `<div style="margin-top:4px; color:#bf5f82; font-size:0.95em;">#${task.tags.join(' #')}</div>` : ''}
+          </div>
+          <div class="task-actions">
+            <button class="task-btn delete-btn" title="Видалити">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
+        <div style="margin-top:8px; color:#b3a6bf;">${task.description || ''}</div>
+      </div>
+    `)
+    .join('');
+  // Додаємо обробники для видалення
+  tasksContainer.querySelectorAll('.delete-btn').forEach(btn => {
+    const card = btn.closest('.task-card');
+    if (card) {
+      btn.addEventListener('click', () => moveToTrash(card.dataset.id));
+    }
+  });
+}
+
+// --- Перевірка наявності завдань (для порожнього списку) ---
+function checkEmptyTasks() {
+  const tasksContainer = document.getElementById('tasks-container');
+  if (tasksContainer && !tasksContainer.querySelector('.task-card')) {
+    tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
+      <span class="material-icons" style="font-size:48px; margin-bottom:16px;">event_busy</span>
+      <p>Завдань немає</p>
+    </div>`;
+  }
+}
+
 // В document.addEventListener('DOMContentLoaded') додаємо:
 document.addEventListener('DOMContentLoaded', () => {
         const dayButtons = document.querySelectorAll('.day-btn');
