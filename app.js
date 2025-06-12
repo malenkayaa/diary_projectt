@@ -59,204 +59,126 @@ function addTask(title, description, day, priority, tags) {
   return newTask;
 }
 
-      function deleteTask(taskId) {
-        const tasks = loadFromStorage();
-        const updatedTasks = tasks.filter((task) => task.id !== taskId);
-        saveToStorage(updatedTasks);
+      let trashedTasks = [];
 
-        const taskCard = document.querySelector(
-          `.task-card[data-id="${taskId}"]`
-        );
-        if (taskCard) {
-          taskCard.style.transform = 'translateX(100px)';
-          taskCard.style.opacity = '0';
-          setTimeout(() => {
-            taskCard.remove();
-            checkEmptyTasks();
-          }, 300);
-        }
-      }
-
-      function toggleTaskComplete(taskId) {
-        const tasks = loadFromStorage();
-
-        const updatedTasks = tasks.map((task) => {
-          if (task.id === taskId) {
-            return { ...task, completed: !task.completed };
-          }
-          return task;
-        });
-
-        saveToStorage(updatedTasks);
-
-        const taskCard = document.querySelector(
-          `.task-card[data-id="${taskId}"]`
-        );
-        if (taskCard) {
-          taskCard.classList.toggle('completed');
-          const completeBtn = taskCard.querySelector('.complete-btn');
-          if (completeBtn) {
-            completeBtn.innerHTML = `<span class="material-icons">${
-              taskCard.classList.contains('completed') ? 'undo' : 'check_circle'
-            }</span>`;
-          }
-        }
-      }
-
-      // Оновлюємо displayTasksForDay для підтримки фільтрації за тегом
-function displayTasksForDay(day, tagFilter = '') {
-  const tasksContainer = document.getElementById('tasks-container');
-  let tasks = loadFromStorage().filter((task) => task.day === day);
-
-  document.getElementById('selected-day').textContent = dayTranslations[day];
-
-  // Якщо є фільтр за тегом
-  if (tagFilter && tagFilter.trim() !== '') {
-    const tag = tagFilter.trim().toLowerCase();
-    tasks = tasks.filter(task => Array.isArray(task.tags) && task.tags.includes(tag));
+      // Замінюємо функцію deleteTask на moveToTrash:
+function moveToTrash(taskId) {
+  const tasks = loadFromStorage();
+  const taskIndex = tasks.findIndex(task => task.id === taskId);
+  
+  if (taskIndex !== -1) {
+    const trashedTask = tasks.splice(taskIndex, 1)[0];
+    trashedTask.deletedAt = new Date().toISOString();
+    trashedTasks.push(trashedTask);
+    
+    saveToStorage(tasks);
+    localStorage.setItem('trashed-tasks', JSON.stringify(trashedTasks));
+    
+    const taskElement = document.querySelector(`.task-card[data-id="${taskId}"]`);
+    if (taskElement) {
+      taskElement.style.transform = 'translateX(100px)';
+      taskElement.style.opacity = '0';
+      setTimeout(() => {
+        taskElement.remove();
+        renderTrashItems();
+        checkEmptyTasks();
+      }, 300);
+    }
   }
+}
 
-  if (tasks.length === 0) {
-    tasksContainer.innerHTML = `
-      <div class="no-tasks">
-        <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">task</span>
-        <p>Немає завдань${tagFilter ? ' з тегом "' + tagFilter + '"' : ' на ' + dayTranslations[day].toLowerCase()}</p>
-        <p>Натисніть "Додати завдання" щоб створити нове</p>
+function restoreFromTrash(taskId) {
+  const taskIndex = trashedTasks.findIndex(task => task.id === taskId);
+  
+  if (taskIndex !== -1) {
+    const tasks = loadFromStorage();
+    const restoredTask = trashedTasks.splice(taskIndex, 1)[0];
+    delete restoredTask.deletedAt;
+    tasks.push(restoredTask);
+    
+    saveToStorage(tasks);
+    localStorage.setItem('trashed-tasks', JSON.stringify(trashedTasks));
+    
+    const trashedElement = document.querySelector(`.trash-item[data-id="${taskId}"]`);
+    if (trashedElement) {
+      trashedElement.style.transform = 'translateX(-100px)';
+      trashedElement.style.opacity = '0';
+      setTimeout(() => {
+        renderTrashItems();
+        // Оновлюємо відображення завдань, якщо відновлене завдання належить до поточного дня
+        const activeDay = document.querySelector('.day-btn.active');
+        if (activeDay && activeDay.dataset.day === restoredTask.day) {
+          displayTasksForDay(restoredTask.day);
+        }
+      }, 300);
+    }
+  }
+}
+
+function deleteForever(taskId) {
+  const taskIndex = trashedTasks.findIndex(task => task.id === taskId);
+  
+  if (taskIndex !== -1) {
+    trashedTasks.splice(taskIndex, 1);
+    localStorage.setItem('trashed-tasks', JSON.stringify(trashedTasks));
+    
+    const trashedElement = document.querySelector(`.trash-item[data-id="${taskId}"]`);
+    if (trashedElement) {
+      trashedElement.style.transform = 'scale(0.8)';
+      trashedElement.style.opacity = '0';
+      setTimeout(() => {
+        renderTrashItems();
+      }, 300);
+    }
+  }
+}
+
+function renderTrashItems() {
+  const trashContainer = document.getElementById('trash-items');
+  if (!trashContainer) return;
+  
+  if (trashedTasks.length === 0) {
+    trashContainer.innerHTML = `
+      <div class="no-tasks" style="text-align: center; padding: 2rem;">
+        <span class="material-icons" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">delete_outline</span>
+        <p>Кошик порожній</p>
       </div>
     `;
     return;
   }
-
-  tasks.sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
-  });
-              }">
-                <span class="icon-modern">${
-                  task.completed
-                    ? '<svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#a5d6a7" fill="#a5d6a7"/><polyline points="8 12.5 11 15.5 16 9.5" stroke="#fff"/></svg>'
-                    : '<svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#a5d6a7"/><polyline points="8 12.5 11 15.5 16 9.5" stroke="#a5d6a7"/></svg>'
-                }</span>
-              </button>
-              <button class="task-btn delete-btn" title="Видалити завдання">
-                <span class="icon-modern">
-                  <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="16" height="13" rx="2" fill="#ef9a9a"/><path d="M8 10v4M12 10v4M16 10v4" stroke="#fff"/><path d="M5 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="#fff"/></svg>
-                </span>
-              </button>
-            </div>
-          </div>
-          ${
-            task.description
-              ? `<p class="task-description">${task.description}</p>`
-              : ''
-          }
-          <span class="task-priority priority-${task.priority}">
+  
+  trashContainer.innerHTML = trashedTasks
+    .sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt))
+    .map((task, index) => `
+      <div class="trash-item" data-id="${task.id}" style="animation-delay: ${index * 0.1}s">
+        <div class="trash-item-content">
+          <div class="trash-item-title">${task.title}</div>
+          <div class="task-priority priority-${task.priority}" style="display: inline-block; margin-top: 4px;">
             <span class="material-icons">${priorityIcons[task.priority]}</span>
-            ${priorityTranslations[task.priority]} пріоритет
-          </span>
+          </div>
         </div>
-      `
-          )
-          .join('');
+        <div class="trash-actions">
+          <button class="restore-btn" title="Відновити завдання">
+            <span class="material-icons">restore</span>
+          </button>
+          <button class="delete-forever-btn" title="Видалити назавжди">
+            <span class="material-icons">delete_forever</span>
+          </button>
+        </div>
+      </div>
+    `)
+    .join('');
+  
+  // Додаємо обробники подій
+  trashContainer.querySelectorAll('.trash-item').forEach(item => {
+    const taskId = item.dataset.id;
+    item.querySelector('.restore-btn').addEventListener('click', () => restoreFromTrash(taskId));
+    item.querySelector('.delete-forever-btn').addEventListener('click', () => deleteForever(taskId));
+  });
+}
 
-        // Додаємо обробники подій для кнопок
-        tasksContainer.querySelectorAll('.task-card').forEach((card) => {
-          const taskId = card.dataset.id;
-
-          card.querySelector('.complete-btn').addEventListener('click', () => {
-            toggleTaskComplete(taskId);
-          });
-
-          card.querySelector('.delete-btn').addEventListener('click', () => {
-            deleteTask(taskId);
-          });
-        });
-
-        initDragAndDrop();
-      }
-
-      function checkEmptyTasks() {
-        const tasksContainer = document.getElementById('tasks-container');
-        const activeDay = document.querySelector('.day-btn.active');
-
-        if (tasksContainer.children.length === 0 && activeDay) {
-          displayTasksForDay(activeDay.dataset.day);
-        }
-      }
-
-      function initDragAndDrop() {
-        const taskCards = document.querySelectorAll('.task-card');
-        const tasksContainer = document.getElementById('tasks-container');
-
-        taskCards.forEach((card) => {
-          card.setAttribute('draggable', true);
-
-          card.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', card.dataset.id);
-            card.classList.add('dragging');
-          });
-
-          card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-          });
-        });
-
-        tasksContainer.addEventListener('dragover', (e) => {
-          e.preventDefault();
-        });
-
-        tasksContainer.addEventListener('drop', (e) => {
-          e.preventDefault();
-          const taskId = e.dataTransfer.getData('text/plain');
-          const activeDay = document.querySelector('.day-btn.active');
-          if (activeDay) {
-            moveTask(taskId, activeDay.dataset.day);
-          }
-        });
-      }
-
-      function initDayDropZones() {
-        const dayButtons = document.querySelectorAll('.day-btn');
-
-        dayButtons.forEach((dayBtn) => {
-          dayBtn.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dayBtn.classList.add('dragover');
-          });
-
-          dayBtn.addEventListener('dragleave', () => {
-            dayBtn.classList.remove('dragover');
-          });
-
-          dayBtn.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dayBtn.classList.remove('dragover');
-            const taskId = e.dataTransfer.getData('text/plain');
-            const newDay = dayBtn.dataset.day;
-            moveTask(taskId, newDay);
-
-            // Оновлюємо активний день
-            dayButtons.forEach((btn) => btn.classList.remove('active'));
-            dayBtn.classList.add('active');
-            displayTasksForDay(newDay);
-          });
-        });
-      }
-
-      function moveTask(taskId, newDay) {
-        const tasks = loadFromStorage();
-        const taskIndex = tasks.findIndex((task) => task.id === taskId);
-
-        if (taskIndex !== -1) {
-          tasks[taskIndex].day = newDay;
-          saveToStorage(tasks);
-          displayTasksForDay(newDay);
-        }
-      }
-
-      // Ініціалізація
-      document.addEventListener('DOMContentLoaded', () => {
+// В document.addEventListener('DOMContentLoaded') додаємо:
+document.addEventListener('DOMContentLoaded', () => {
         const dayButtons = document.querySelectorAll('.day-btn');
         const addTaskBtn = document.getElementById('add-task-btn');
         const modal = document.getElementById('task-modal');
@@ -291,20 +213,38 @@ function displayTasksForDay(day, tagFilter = '') {
 
         taskForm.addEventListener('submit', (e) => {
           e.preventDefault();
-
           const title = document.getElementById('task-title').value;
           const description = document.getElementById('task-description').value;
           const day = document.getElementById('task-day').value;
           const priority = document.getElementById('task-priority').value;
-
-          addTask(title, description, day, priority);
-
+          const tagsStr = document.getElementById('task-tags').value;
+          const tags = parseTags(tagsStr);
+          addTask(title, description, day, priority, tags);
           taskForm.reset();
-          modal.classList.remove('show');
-
+          document.getElementById('task-modal').classList.remove('show');
           const activeDay = document.querySelector('.day-btn.active');
           if (activeDay && activeDay.dataset.day === day) {
             displayTasksForDay(day);
+          }
+        });
+
+        // --- Пошук за тегом ---
+        let currentTagFilter = '';
+        const tagSearchInput = document.getElementById('tag-search-input');
+        const clearTagSearch = document.getElementById('clear-tag-search');
+        tagSearchInput.addEventListener('input', () => {
+          currentTagFilter = tagSearchInput.value.trim();
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay) {
+            displayTasksForDay(activeDay.dataset.day, currentTagFilter);
+          }
+        });
+        clearTagSearch.addEventListener('click', () => {
+          tagSearchInput.value = '';
+          currentTagFilter = '';
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay) {
+            displayTasksForDay(activeDay.dataset.day);
           }
         });
 
@@ -312,4 +252,20 @@ function displayTasksForDay(day, tagFilter = '') {
         document.querySelector('[data-day="monday"]').click();
 
         initDayDropZones();
+
+        // Завантажуємо видалені завдання
+  const savedTrashedTasks = localStorage.getItem('trashed-tasks');
+  if (savedTrashedTasks) {
+    trashedTasks = JSON.parse(savedTrashedTasks);
+    renderTrashItems();
+  }
+  
+  // Додаємо обробник для кнопки очищення кошика
+  document.getElementById('clear-trash').addEventListener('click', () => {
+    if (confirm('Ви впевнені, що хочете повністю очистити кошик? Це дію неможливо відмінити.')) {
+      trashedTasks = [];
+      localStorage.setItem('trashed-tasks', JSON.stringify(trashedTasks));
+      renderTrashItems();
+    }
+  });
       });

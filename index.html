@@ -63,6 +63,19 @@
       </div>
       <div id="tasks-container"></div>
     </div>
+    <div id="trash-container" class="trash-container">
+      <div class="trash-header">
+        <h2>
+          <span class="material-icons">delete_outline</span>
+          Кошик
+        </h2>
+        <button id="clear-trash" class="clear-trash-btn">
+          <span class="material-icons">delete_forever</span>
+          Очистити
+        </button>
+      </div>
+      <div id="trash-items"></div>
+    </div>
   </div>
 
   <div id="task-modal" class="modal">
@@ -102,7 +115,7 @@
           <label for="task-priority">Пріоритет</label>
           <select id="task-priority">
             <option value="low">Низький</option>
-            <option value="medium" selected>Середній</option>
+            <option value="medium">Середній</option>
             <option value="high">Високий</option>
           </select>
         </div>
