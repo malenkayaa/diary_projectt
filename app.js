@@ -1,4 +1,4 @@
- // Переклади
+// Переклади
       const dayTranslations = {
         monday: 'Понеділок',
         tuesday: 'Вівторок',
@@ -166,6 +166,8 @@
             deleteTask(taskId);
           });
         });
+
+        initDragAndDrop();
       }
 
       function checkEmptyTasks() {
@@ -174,6 +176,76 @@
 
         if (tasksContainer.children.length === 0 && activeDay) {
           displayTasksForDay(activeDay.dataset.day);
+        }
+      }
+
+      function initDragAndDrop() {
+        const taskCards = document.querySelectorAll('.task-card');
+        const tasksContainer = document.getElementById('tasks-container');
+
+        taskCards.forEach((card) => {
+          card.setAttribute('draggable', true);
+
+          card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', card.dataset.id);
+            card.classList.add('dragging');
+          });
+
+          card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+          });
+        });
+
+        tasksContainer.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        tasksContainer.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const taskId = e.dataTransfer.getData('text/plain');
+          const activeDay = document.querySelector('.day-btn.active');
+          if (activeDay) {
+            moveTask(taskId, activeDay.dataset.day);
+          }
+        });
+      }
+
+      function initDayDropZones() {
+        const dayButtons = document.querySelectorAll('.day-btn');
+
+        dayButtons.forEach((dayBtn) => {
+          dayBtn.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dayBtn.classList.add('dragover');
+          });
+
+          dayBtn.addEventListener('dragleave', () => {
+            dayBtn.classList.remove('dragover');
+          });
+
+          dayBtn.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dayBtn.classList.remove('dragover');
+            const taskId = e.dataTransfer.getData('text/plain');
+            const newDay = dayBtn.dataset.day;
+            moveTask(taskId, newDay);
+
+            // Оновлюємо активний день
+            dayButtons.forEach((btn) => btn.classList.remove('active'));
+            dayBtn.classList.add('active');
+            displayTasksForDay(newDay);
+          });
+        });
+      }
+
+      function moveTask(taskId, newDay) {
+        const tasks = loadFromStorage();
+        const taskIndex = tasks.findIndex((task) => task.id === taskId);
+
+        if (taskIndex !== -1) {
+          tasks[taskIndex].day = newDay;
+          saveToStorage(tasks);
+          displayTasksForDay(newDay);
         }
       }
 
@@ -232,4 +304,6 @@
 
         // Початкова ініціалізація з понеділком
         document.querySelector('[data-day="monday"]').click();
+
+        initDayDropZones();
       });
