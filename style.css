@@ -177,6 +177,7 @@
         overflow-y: auto;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
+        margin-right: 280px; /* Додаємо відступ для кошика */
       }
 
       .day-header {
@@ -518,19 +519,26 @@
       }
 
       .trash-container {
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(248, 187, 208, 0.05));
-  border-radius: var(--border-radius);
+  width: 280px;
+  background: var(--glass-gradient);
   padding: var(--space-3);
-  margin-top: var(--space-4);
-  border: 1px solid rgba(248, 187, 208, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(248, 187, 208, 0.1);
   box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 1;
+  animation: glowPulse 3s infinite alternate;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  top: 0;
+  right: 0;
+  position: fixed;
 }
 
 .trash-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-3);
   padding-bottom: var(--space-3);
@@ -545,6 +553,13 @@
   font-size: 1.5em;
 }
 
+.trash-items-container {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -var(--space-3);
+  padding: 0 var(--space-3);
+}
+
 .clear-trash-btn {
   background: linear-gradient(120deg, rgba(239, 154, 154, 0.2), rgba(248, 187, 208, 0.2));
   border: 1px solid rgba(239, 154, 154, 0.3);
@@ -557,70 +572,13 @@
   gap: var(--space-2);
   transition: var(--transition);
   font-size: 0.9em;
+  margin-top: var(--space-3);
+  width: 100%;
+  justify-content: center;
 }
 
 .clear-trash-btn:hover {
   background: linear-gradient(120deg, rgba(239, 154, 154, 0.3), rgba(248, 187, 208, 0.3));
   transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.trash-item {
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.03), rgba(248, 187, 208, 0.03));
-  padding: var(--space-3);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--space-2);
-  border: 1px solid rgba(248, 187, 208, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  animation: slideIn 0.3s ease-out forwards;
-}
-
-.trash-item-content {
-  flex: 1;
-}
-
-.trash-item-title {
-  color: var(--neutral-800);
-  margin-bottom: var(--space-1);
-  font-weight: 500;
-}
-
-.trash-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.restore-btn, .delete-forever-btn {
-  background: linear-gradient(120deg, rgba(248, 187, 208, 0.18), rgba(225, 190, 231, 0.18));
-  border: none;
-  cursor: pointer;
-  padding: var(--space-1);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-  box-shadow: 0 2px 8px rgba(248, 187, 208, 0.10);
-}
-
-.restore-btn {
-  background: linear-gradient(120deg, #a5d6a7 0%, #f8bbd0 100%);
-  color: #fff;
-}
-
-.delete-forever-btn {
-  background: linear-gradient(120deg, #ef9a9a 0%, #f8bbd0 100%);
-  color: #fff;
-}
-
-.restore-btn:hover, .delete-forever-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(248, 187, 208, 0.2);
-  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(239, 154, 154, 0.2);
 }
