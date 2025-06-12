@@ -295,60 +295,68 @@
         background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(248, 187, 208, 0.05));
       }
 
-      .task-card {
-        background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(248, 187, 208, 0.05));
-        padding: var(--space-3);
-        border-radius: var(--border-radius);
-        margin-bottom: var(--space-3);
-        border: 1px solid rgba(248, 187, 208, 0.15);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 4px 15px rgba(248, 187, 208, 0.1);
-        animation: floatAnimation 3s ease-in-out infinite;
-        cursor: grab;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-      }
+      /* Виправлено дублювання анімацій для .task-card */
+.task-card {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(248, 187, 208, 0.05));
+  padding: var(--space-3);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-3);
+  border: 1px solid rgba(248, 187, 208, 0.15);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(248, 187, 208, 0.1);
+  cursor: grab;
+  animation: fadeScale 0.6s var(--transition) forwards, shimmer 3s infinite;
+  animation-delay: calc(var(--animation-order, 0) * 0.1s), 0s;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 182, 193, 0.03) 25%,
+    rgba(255, 182, 193, 0.08) 37%,
+    rgba(255, 182, 193, 0.03) 63%
+  );
+  background-size: 400% 100%;
+}
 
-      .task-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        background: linear-gradient(
-          120deg,
-          transparent,
-          rgba(248, 187, 208, 0.05),
-          rgba(225, 190, 231, 0.05),
-          transparent
-        );
-        transform: translateX(-100%);
-        transition: 0.5s;
-      }
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(248, 187, 208, 0.05),
+    rgba(225, 190, 231, 0.05),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: 0.5s;
+}
 
-      .task-card:hover::before {
-        transform: translateX(100%);
-      }
+.task-card:hover::before {
+  transform: translateX(100%);
+}
 
-      .task-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        border-color: rgba(248, 187, 208, 0.3);
-        box-shadow: 0 8px 25px rgba(248, 187, 208, 0.2);
-      }
+.task-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: rgba(248, 187, 208, 0.3);
+  box-shadow: 0 8px 25px rgba(248, 187, 208, 0.2);
+}
 
-      .task-card.dragging {
-        opacity: 0.5;
-        transform: scale(0.95);
-        cursor: grabbing;
-      }
+.task-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  cursor: grabbing;
+}
 
-      .task-card.completed {
-        cursor: grab;
-      }
+.task-card.completed {
+  cursor: grab;
+}
 
       #tasks-container {
         min-height: 200px; /* Додаємо мінімальну висоту для зони перетягування */
@@ -374,46 +382,6 @@
         }
       }
 
-      .task-card {
-        animation: fadeScale 0.6s var(--transition) forwards;
-        animation-delay: calc(var(--animation-order, 0) * 0.1s);
-        background: linear-gradient(
-          90deg,
-          rgba(255, 182, 193, 0.03) 25%,
-          rgba(255, 182, 193, 0.08) 37%,
-          rgba(255, 182, 193, 0.03) 63%
-        );
-        background-size: 400% 100%;
-        animation: shimmer 3s infinite;
-      }
-
-      .task-btn {
-        background: linear-gradient(120deg, rgba(248, 187, 208, 0.1), rgba(225, 190, 231, 0.1));
-        border: 1px solid rgba(248, 187, 208, 0.2);
-        color: var(--neutral-800);
-        cursor: pointer;
-        padding: var(--space-1);
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: var(--transition);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .task-btn:hover {
-        transform: scale(1.1) rotate(5deg);
-        background: linear-gradient(120deg, rgba(248, 187, 208, 0.2), rgba(225, 190, 231, 0.2));
-        border-color: rgba(248, 187, 208, 0.4);
-        color: var(--neutral-900);
-        box-shadow: 0 4px 12px rgba(248, 187, 208, 0.2);
-      }
-
       @keyframes slideIn {
         from {
           opacity: 0;
@@ -423,11 +391,6 @@
           opacity: 1;
           transform: translateY(0);
         }
-      }
-
-      .task-card {
-        animation: slideIn 0.5s ease-out forwards;
-        animation-delay: calc(var(--animation-order, 0) * 0.1s);
       }
 
       @keyframes glowPulse {
@@ -462,4 +425,63 @@
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: var(--space-2);
         padding: var(--space-2);
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--space-2);
+      }
+
+      .task-actions {
+        display: flex;
+        gap: var(--space-2);
+        margin-left: auto;
+        align-items: center;
+      }
+
+      .task-btn {
+        background: linear-gradient(120deg, rgba(248, 187, 208, 0.18), rgba(225, 190, 231, 0.18));
+        border: none;
+        color: var(--primary-dark);
+        cursor: pointer;
+        padding: var(--space-1);
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        box-shadow: 0 2px 8px rgba(248, 187, 208, 0.10);
+        font-size: 1.5rem;
+        outline: none;
+        position: relative;
+      }
+
+      .task-btn:active {
+        transform: scale(0.95);
+      }
+
+      .task-btn.complete-btn {
+        background: linear-gradient(120deg, #a5d6a7 0%, #f8bbd0 100%);
+        color: #fff;
+      }
+
+      .task-btn.delete-btn {
+        background: linear-gradient(120deg, #ef9a9a 0%, #f8bbd0 100%);
+        color: #fff;
+      }
+
+      .task-btn .icon-modern {
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .task-btn:hover {
+        box-shadow: 0 4px 16px rgba(248, 187, 208, 0.18);
+        filter: brightness(1.08);
       }

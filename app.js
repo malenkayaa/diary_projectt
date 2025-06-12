@@ -32,24 +32,32 @@
       }
 
       // Управління завданнями
-      function addTask(title, description, day, priority) {
-        const tasks = loadFromStorage();
+      // Додаємо функцію для отримання масиву тегів з рядка
+function parseTags(str) {
+  return str
+    .split(',')
+    .map(t => t.trim())
+    .filter(Boolean)
+    .map(t => t.toLowerCase());
+}
 
-        const newTask = {
-          id: Date.now().toString(),
-          title,
-          description,
-          day,
-          priority,
-          completed: false,
-          createdAt: new Date().toISOString(),
-        };
-
-        tasks.push(newTask);
-        saveToStorage(tasks);
-
-        return newTask;
-      }
+// Оновлений addTask з підтримкою тегів
+function addTask(title, description, day, priority, tags) {
+  const tasks = loadFromStorage();
+  const newTask = {
+    id: Date.now().toString(),
+    title,
+    description,
+    day,
+    priority,
+    completed: false,
+    createdAt: new Date().toISOString(),
+    tags: tags || []
+  };
+  tasks.push(newTask);
+  saveToStorage(tasks);
+  return newTask;
+}
 
       function deleteTask(taskId) {
         const tasks = loadFromStorage();
@@ -87,56 +95,54 @@
         if (taskCard) {
           taskCard.classList.toggle('completed');
           const completeBtn = taskCard.querySelector('.complete-btn');
-          completeBtn.innerHTML = `<span class="material-icons">${
-            taskCard.classList.contains('completed') ? 'undo' : 'check_circle'
-          }</span>`;
+          if (completeBtn) {
+            completeBtn.innerHTML = `<span class="material-icons">${
+              taskCard.classList.contains('completed') ? 'undo' : 'check_circle'
+            }</span>`;
+          }
         }
       }
 
-      function displayTasksForDay(day) {
-        const tasksContainer = document.getElementById('tasks-container');
-        const tasks = loadFromStorage().filter((task) => task.day === day);
+      // Оновлюємо displayTasksForDay для підтримки фільтрації за тегом
+function displayTasksForDay(day, tagFilter = '') {
+  const tasksContainer = document.getElementById('tasks-container');
+  let tasks = loadFromStorage().filter((task) => task.day === day);
 
-        document.getElementById('selected-day').textContent =
-          dayTranslations[day];
+  document.getElementById('selected-day').textContent = dayTranslations[day];
 
-        if (tasks.length === 0) {
-          tasksContainer.innerHTML = `
-          <div class="no-tasks">
-            <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">task</span>
-            <p>Немає завдань на ${dayTranslations[day].toLowerCase()}</p>
-            <p>Натисніть "Додати завдання" щоб створити нове</p>
-          </div>
-        `;
-          return;
-        }
+  // Якщо є фільтр за тегом
+  if (tagFilter && tagFilter.trim() !== '') {
+    const tag = tagFilter.trim().toLowerCase();
+    tasks = tasks.filter(task => Array.isArray(task.tags) && task.tags.includes(tag));
+  }
 
-        tasks.sort((a, b) => {
-          if (a.completed !== b.completed) return a.completed ? 1 : -1;
-          const priorityOrder = { high: 0, medium: 1, low: 2 };
-          return priorityOrder[a.priority] - priorityOrder[b.priority];
-        });
+  if (tasks.length === 0) {
+    tasksContainer.innerHTML = `
+      <div class="no-tasks">
+        <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">task</span>
+        <p>Немає завдань${tagFilter ? ' з тегом "' + tagFilter + '"' : ' на ' + dayTranslations[day].toLowerCase()}</p>
+        <p>Натисніть "Додати завдання" щоб створити нове</p>
+      </div>
+    `;
+    return;
+  }
 
-        tasksContainer.innerHTML = tasks
-          .map(
-            (task, index) => `
-        <div class="task-card priority-${task.priority} ${
-              task.completed ? 'completed' : ''
-            }" 
-             data-id="${task.id}" 
-             style="animation-delay: ${index * 0.1}s">
-          <div class="task-header">
-            <h3 class="task-title">${task.title}</h3>
-            <div class="task-actions">
-              <button class="task-btn complete-btn" title="${
-                task.completed ? 'Відмінити виконання' : 'Позначити як виконане'
+  tasks.sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
               }">
-                <span class="material-icons">${
-                  task.completed ? 'undo' : 'check_circle'
+                <span class="icon-modern">${
+                  task.completed
+                    ? '<svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#a5d6a7" fill="#a5d6a7"/><polyline points="8 12.5 11 15.5 16 9.5" stroke="#fff"/></svg>'
+                    : '<svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#a5d6a7"/><polyline points="8 12.5 11 15.5 16 9.5" stroke="#a5d6a7"/></svg>'
                 }</span>
               </button>
               <button class="task-btn delete-btn" title="Видалити завдання">
-                <span class="material-icons">delete</span>
+                <span class="icon-modern">
+                  <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="16" height="13" rx="2" fill="#ef9a9a"/><path d="M8 10v4M12 10v4M16 10v4" stroke="#fff"/><path d="M5 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="#fff"/></svg>
+                </span>
               </button>
             </div>
           </div>
