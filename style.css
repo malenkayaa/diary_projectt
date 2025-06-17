@@ -277,13 +277,29 @@ body::before {
 .form-group select {
   width: 100%;
   padding: var(--space-2);
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.03), rgba(248, 187, 208, 0.03));
+  background: linear-gradient(120deg, rgba(26, 16, 33, 0.95), rgba(35, 26, 46, 0.95));
   border: 1px solid rgba(248, 187, 208, 0.15);
   border-radius: var(--border-radius);
   color: var(--neutral-900);
   transition: var(--transition);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+select, .form-group select {
+  background: linear-gradient(120deg, rgba(26, 16, 33, 0.95), rgba(35, 26, 46, 0.95)) !important;
+  color: var(--neutral-900) !important;
+  border: 1px solid rgba(248, 187, 208, 0.15);
+}
+
+select:focus, .form-group select:focus {
+  background: linear-gradient(120deg, rgba(35, 26, 46, 1), rgba(26, 16, 33, 1)) !important;
+  color: var(--neutral-900) !important;
+}
+
+option {
+  background: #231a2e;
+  color: var(--neutral-900);
 }
 
 .form-group input:focus,
@@ -357,6 +373,20 @@ body::before {
 #tasks-container {
   min-height: 200px;
   /* Додаємо мінімальну висоту для зони перетягування */
+}
+
+#trash-container {
+  position: relative;
+  width: 280px;
+  background: var(--glass-gradient);
+  padding: var(--space-3);
+  border-right: 0px solid rgba(248, 187, 208, 0.1);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1;
+  animation: glowPulse 3s infinite alternate;
+  border-radius: 0; /* Прибрано заокруглення контейнера кошика */
 }
 
 @keyframes fadeScale {

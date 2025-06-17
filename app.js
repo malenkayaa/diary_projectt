@@ -178,7 +178,7 @@ function renderTrashItems() {
 }
 
 // --- Відображення завдань для обраного дня ---
-function displayTasksForDay(day, tagFilter = '') {
+function displayTasksForDay(day, search = '') {
   const tasksContainer = document.getElementById('tasks-container');
   const selectedDay = document.getElementById('selected-day');
   if (selectedDay) {
@@ -186,9 +186,12 @@ function displayTasksForDay(day, tagFilter = '') {
   }
   const allTasks = loadFromStorage();
   let tasks = allTasks.filter(task => task.day === day);
-  if (tagFilter) {
-    const filter = tagFilter.trim().toLowerCase();
-    tasks = tasks.filter(task => task.tags && task.tags.some(tag => tag.includes(filter)));
+  if (search) {
+    const filter = search.trim().toLowerCase();
+    tasks = tasks.filter(task =>
+      (task.title && task.title.toLowerCase().includes(filter)) ||
+      (task.tags && task.tags.some(tag => tag.includes(filter)))
+    );
   }
   if (tasks.length === 0) {
     tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
@@ -240,6 +243,46 @@ function checkEmptyTasks() {
   }
 }
 
+// --- Додаємо відображення унікальних тегів у sidebar ---
+function renderSidebarTags() {
+  const allTasks = loadFromStorage();
+  const tagSet = new Set();
+  allTasks.forEach(task => {
+    if (Array.isArray(task.tags)) {
+      task.tags.forEach(tag => tagSet.add(tag));
+    }
+  });
+  const sidebarTags = document.getElementById('sidebar-tags');
+  if (!sidebarTags) return;
+  if (tagSet.size === 0) {
+    sidebarTags.innerHTML = '<div style="color:#b3a6bf; font-size:0.95em; text-align:center;">Тегів ще немає</div>';
+    return;
+  }
+  sidebarTags.innerHTML =
+    '<div style="font-weight:600; color:#bf5f82; margin-bottom:8px;">Теги:</div>' +
+    Array.from(tagSet).map(tag =>
+      `<div class="sidebar-tag" style="margin-bottom:4px; color:#f5eeff; background:#231a2e; border-radius:8px; padding:4px 10px; display:inline-block; cursor:pointer; font-size:0.97em;">#${tag}</div>`
+    ).join(' ');
+  // Додаємо фільтрацію по кліку на тег
+  sidebarTags.querySelectorAll('.sidebar-tag').forEach(tagEl => {
+    tagEl.addEventListener('click', () => {
+      const tag = tagEl.textContent.replace('#', '');
+      const activeDay = document.querySelector('.day-btn.active');
+      if (activeDay) {
+        displayTasksForDay(activeDay.dataset.day, tag);
+        // Якщо після фільтрації завдань немає, все одно показати блок "Завдань немає"
+        const tasksContainer = document.getElementById('tasks-container');
+        if (tasksContainer && !tasksContainer.querySelector('.task-card')) {
+          tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
+            <span class="material-icons" style="font-size:48px; margin-bottom:16px;">event_busy</span>
+            <p>Завдань немає</p>
+          </div>`;
+        }
+      }
+    });
+  });
+}
+
 // В document.addEventListener('DOMContentLoaded') додаємо:
 document.addEventListener('DOMContentLoaded', () => {
         const dayButtons = document.querySelectorAll('.day-btn');
@@ -252,7 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
           button.addEventListener('click', () => {
             dayButtons.forEach((btn) => btn.classList.remove('active'));
             button.classList.add('active');
-            displayTasksForDay(button.dataset.day);
+            // Передаємо поточний пошуковий запит з поля пошуку
+            displayTasksForDay(button.dataset.day, tagSearchInput.value.trim());
+            renderSidebarTags();
           });
         });
 
@@ -291,20 +336,20 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        // --- Пошук за тегом ---
-        let currentTagFilter = '';
+        // --- Пошук за назвою або тегом для активного дня ---
+        let currentSearch = '';
         const tagSearchInput = document.getElementById('tag-search-input');
         const clearTagSearch = document.getElementById('clear-tag-search');
         tagSearchInput.addEventListener('input', () => {
-          currentTagFilter = tagSearchInput.value.trim();
+          currentSearch = tagSearchInput.value.trim();
           const activeDay = document.querySelector('.day-btn.active');
           if (activeDay) {
-            displayTasksForDay(activeDay.dataset.day, currentTagFilter);
+            displayTasksForDay(activeDay.dataset.day, currentSearch);
           }
         });
         clearTagSearch.addEventListener('click', () => {
           tagSearchInput.value = '';
-          currentTagFilter = '';
+          currentSearch = '';
           const activeDay = document.querySelector('.day-btn.active');
           if (activeDay) {
             displayTasksForDay(activeDay.dataset.day);
@@ -331,4 +376,26 @@ document.addEventListener('DOMContentLoaded', () => {
       renderTrashItems();
     }
   });
+
+  renderSidebarTags();
+      });
+
+      // Оновлюємо теги у sidebar після додавання завдання
+      const taskForm = document.getElementById('task-form');
+      taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('task-title').value;
+        const description = document.getElementById('task-description').value;
+        const day = document.getElementById('task-day').value;
+        const priority = document.getElementById('task-priority').value;
+        const tagsStr = document.getElementById('task-tags').value;
+        const tags = parseTags(tagsStr);
+        addTask(title, description, day, priority, tags);
+        taskForm.reset();
+        document.getElementById('task-modal').classList.remove('show');
+        const activeDay = document.querySelector('.day-btn.active');
+        if (activeDay && activeDay.dataset.day === day) {
+          displayTasksForDay(day);
+        }
+        renderSidebarTags();
       });
