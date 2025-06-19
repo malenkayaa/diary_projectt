@@ -685,3 +685,29 @@ option {
   box-shadow: 0 4px 12px rgba(248, 187, 208, 0.2);
   filter: brightness(1.1);
 }
+
+/* Стиль для тегів у sidebar як для кнопок днів */
+.sidebar-tags {
+  margin-top: 8px;
+}
+.sidebar-tag {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(120deg, #fcafbc0e 90%, #9e8e9141 100%) !important;
+  color: #bf5f82;
+  border-radius: var(--border-radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  border: 1px solid #c9b1b981;
+  box-shadow: 0 2px 8px rgba(248, 187, 208, 0.10);
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+.sidebar-tag:hover {
+  background: linear-gradient(120deg, #f8bbd0 60%, #fff0fac9 100%);
+  color: #a13c6c;
+  transform: translateX(5px) scale(1.03);
+  border-color: #e6d0d8;
+}
