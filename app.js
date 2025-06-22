@@ -17,7 +17,7 @@
 
       const priorityIcons = {
         low: 'low_priority',
-        medium: 'priority',
+        medium: 'star', // змінено з 'priority' на 'star'
         high: 'priority_high',
       };
 
@@ -181,17 +181,38 @@ function renderTrashItems() {
 function displayTasksForDay(day, search = '') {
   const tasksContainer = document.getElementById('tasks-container');
   const selectedDay = document.getElementById('selected-day');
-  if (selectedDay) {
-    selectedDay.textContent = dayTranslations[day] || 'Оберіть день';
-  }
   const allTasks = loadFromStorage();
-  let tasks = allTasks.filter(task => task.day === day);
-  if (search) {
+  let tasks;
+  let isGlobalTagSearch = false;
+  if (day === 'all' && search) {
+    // Глобальний пошук по назві та тегах
     const filter = search.trim().toLowerCase();
-    tasks = tasks.filter(task =>
+    tasks = allTasks.filter(task =>
       (task.title && task.title.toLowerCase().includes(filter)) ||
       (task.tags && task.tags.some(tag => tag.includes(filter)))
     );
+    isGlobalTagSearch = true;
+  } else {
+    tasks = allTasks.filter(task => task.day === day);
+    if (search) {
+      const filter = search.trim().toLowerCase();
+      tasks = tasks.filter(task =>
+        (task.title && task.title.toLowerCase().includes(filter)) ||
+        (task.tags && task.tags.some(tag => tag.includes(filter)))
+      );
+    }
+  }
+  if (selectedDay) {
+    if (isGlobalTagSearch) {
+      // Якщо пошук виглядає як тег (починається з # або складається лише з букв/цифр), додаємо #, інакше просто текст
+      if (search.startsWith('#')) {
+        selectedDay.textContent = `Усі дні: ${search}`;
+      } else {
+        selectedDay.textContent = `Усі дні: ${search}`;
+      }
+    } else {
+      selectedDay.textContent = dayTranslations[day] || 'Оберіть день';
+    }
   }
   if (tasks.length === 0) {
     tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
@@ -207,11 +228,6 @@ function displayTasksForDay(day, search = '') {
         <div class="task-header">
           <div>
             <strong>${task.title}</strong>
-            <div class="task-priority priority-${task.priority}">
-              <span class="material-icons">${priorityIcons[task.priority]}</span>
-              ${priorityTranslations[task.priority]}
-            </div>
-            ${task.tags && task.tags.length ? `<div style="margin-top:4px; color:#bf5f82; font-size:0.95em;">#${task.tags.join(' #')}</div>` : ''}
           </div>
           <div class="task-actions">
             <button class="task-btn delete-btn" title="Видалити">
@@ -219,7 +235,14 @@ function displayTasksForDay(day, search = '') {
             </button>
           </div>
         </div>
-        <div style="margin-top:8px; color:#b3a6bf;">${task.description || ''}</div>
+        <div style="margin-top:2px; color:#b3a6bf;">${task.description || ''}</div>
+        <div class="task-bottom-row" style="display:flex; align-items:center; gap:16px; margin-top:10px; color:#bf5f82; font-size:0.97em;">
+          <div class="task-priority priority-${task.priority}" style="margin:0;">
+            <span class="material-icons">${priorityIcons[task.priority]}</span>
+            <span>${priorityTranslations[task.priority]}</span>
+          </div>
+          ${task.tags && task.tags.length ? `<div class="task-tags-row">${task.tags.map(tag => `#${tag}`).join(' ')}</div>` : ''}
+        </div>
       </div>
     `)
     .join('');
@@ -267,17 +290,14 @@ function renderSidebarTags() {
   sidebarTags.querySelectorAll('.sidebar-tag').forEach(tagEl => {
     tagEl.addEventListener('click', () => {
       const tag = tagEl.textContent.replace('#', '');
-      const activeDay = document.querySelector('.day-btn.active');
-      if (activeDay) {
-        displayTasksForDay(activeDay.dataset.day, tag);
-        // Якщо після фільтрації завдань немає, все одно показати блок "Завдань немає"
-        const tasksContainer = document.getElementById('tasks-container');
-        if (tasksContainer && !tasksContainer.querySelector('.task-card')) {
-          tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
-            <span class="material-icons" style="font-size:48px; margin-bottom:16px;">event_busy</span>
-            <p>Завдань немає</p>
-          </div>`;
-        }
+      displayTasksForDay('all', tag); // глобальний фільтр по тегу
+      // Якщо після фільтрації завдань немає, все одно показати блок "Завдань немає"
+      const tasksContainer = document.getElementById('tasks-container');
+      if (tasksContainer && !tasksContainer.querySelector('.task-card')) {
+        tasksContainer.innerHTML = `<div class="no-tasks" style="text-align:center; opacity:0.7; padding:2rem;">
+          <span class="material-icons" style="font-size:48px; margin-bottom:16px;">event_busy</span>
+          <p>Завдань немає</p>
+        </div>`;
       }
     });
   });
@@ -342,9 +362,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const clearTagSearch = document.getElementById('clear-tag-search');
         tagSearchInput.addEventListener('input', () => {
           currentSearch = tagSearchInput.value.trim();
-          const activeDay = document.querySelector('.day-btn.active');
-          if (activeDay) {
-            displayTasksForDay(activeDay.dataset.day, currentSearch);
+          if (currentSearch) {
+            displayTasksForDay('all', currentSearch); // глобальний пошук по всіх днях
+          } else {
+            const activeDay = document.querySelector('.day-btn.active');
+            if (activeDay) {
+              displayTasksForDay(activeDay.dataset.day);
+            }
           }
         });
         clearTagSearch.addEventListener('click', () => {
