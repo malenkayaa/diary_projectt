@@ -396,8 +396,18 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('clear-trash').addEventListener('click', () => {
     if (confirm('Ви впевнені, що хочете повністю очистити кошик? Це дію неможливо відмінити.')) {
       trashedTasks = [];
-      localStorage.setItem('trashed-tasks', JSON.stringify(trashedTasks));
+      localStorage.removeItem('trashed-tasks');
       renderTrashItems();
+      // Додатково явно очищаємо DOM, якщо renderTrashItems не спрацював
+      const trashContainer = document.getElementById('trash-items');
+      if (trashContainer) {
+        trashContainer.innerHTML = `
+          <div class="no-tasks" style="text-align: center; padding: 2rem;">
+            <span class="material-icons" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">delete_outline</span>
+            <p>Кошик порожній</p>
+          </div>
+        `;
+      }
     }
   });
 
